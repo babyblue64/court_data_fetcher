@@ -40,7 +40,7 @@ Clone the repo to a directory on your host machine:
 ---
 
 ## 4️⃣ Set up venv in your Working Directory
-Get inside the Working Directory (called 'practice') and then:
+Get inside the Working Directory and then run:
 
 ```bash
 python3 -m venv venv
