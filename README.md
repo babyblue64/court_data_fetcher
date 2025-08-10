@@ -35,7 +35,7 @@ sudo mv geckodriver /usr/local/bin/
 ---
 
 ## 3️⃣ Clone the Repo
-Clone the repo to a directory on your host machine:
+Clone the repo to a directory on your host machine (github: https://github.com/babyblue64/court_data_fetcher)
 
 ---
 
