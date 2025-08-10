@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Search System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .form-section {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-section {
+            padding: 20px 40px;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+            display: none;
+        }
+
+        .status-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .status-processing .status-icon {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-complete .status-icon {
+            background: #28a745;
+        }
+
+        .status-error .status-icon {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .job-id {
+            font-size: 12px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            margin-top: 5px;
+        }
+
+        .result-section {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+            margin-top: 15px;
+        }
+
+        .new-search-btn {
+            margin-top: 25px;
+            padding: 12px 30px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .new-search-btn:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Court-Data Fetcher & Mini-Dashboard</h1>
+            <p>Search for case details from the Madras High Court Database</p>
+        </div>
+
+        <div class="form-section">
+            <form id="caseForm">
+                <div class="form-group">
+                    <label for="caseType">Case Type</label>
+                    <select id="caseType" name="case_type" required>
+                        <option value="">choose Case Type</option>
+                        <option value="AS_FIRST APPEAL">First Appeal (AS)</option>
+                        <option value="CMA_CIVIL MISC. APPEAL">Civil Miscellaneous Appeal (CMA)</option>
+                        <option value="CMA NPD_CMA Non Pending">CMA Non Pending (CMA NPD)</option>
+                        <option value="CMA PD_CMA Pending">CMA Pending (CMA PD)</option>
+                        <option value="CMSA_CIVIL MISC SECOND APPEAL">Civil Miscellaneous Second Appeal (CMSA)</option>
+                        <option value="COM APEL_Company Appeal">Company Appeal (COM APEL)</option>
+                        <option value="CONT A_CONTEMPT APPEAL">Contempt Appeal (CONT A)</option>
+                        <option value="CONT P_CONTEMPT PETITION">Contempt Petition (CONT P)</option>
+                        <option value="CP_COMPANY PETITION">Company Petition (CP)</option>
+                        <option value="CRL A_CRIMINAL APPEAL">Criminal Appeal (CRL A)</option>
+                        <option value="CRL OP_CRIMINAL ORIGINAL PETITION">Criminal Original Petition (CRL OP)</option>
+                        <option value="CRL RC_CRIMINAL REVISION CASE">Criminal Revision Case (CRL RC)</option>
+                        <option value="CRP_CIVIL REVISION PETITION">Civil Revision Petition (CRP)</option>
+                        <option value="CRP NPD_CIVIL REV.PETN.(NPD)">Civil Revision Petition Non Pending (CRP NPD)</option>
+                        <option value="CRP PD_CIVIL REV.PETN.(PD)">Civil Revision Petition Pending (CRP PD)</option>
+                        <option value="CS_CIVIL SUITS">Civil Suit (CS)</option>
+                        <option value="HCP_HABEAS CORPUS PETITION">Habeas Corpus Petition (HCP)</option>
+                        <option value="IP_INSOLVENCY PETITION">Insolvency Petition (IP)</option>
+                        <option value="LPA_LETTERS PATENT APPEAL">Letters Patent Appeal (LPA)</option>
+                        <option value="RC_REFERRED CASES">Referred Cases (RC)</option>
+                        <option value="RCP_REFERRED CASE PETITION">Referred Case Petition (RCP)</option>
+                        <option value="REV.APLC_REVIEW APPLN.(Civil)">Review Application Civil (REV.APLC)</option>
+                        <option value="REV.APLW_REVIEW APPLN.(Writ)">Review Application Writ (REV.APLW)</option>
+                        <option value="REV.APPL_REVIEW APPLICATIONS">Review Applications (REV.APPL)</option>
+                        <option value="RT_REFERRED TRIAL">Referred Trial (RT)</option>
+                        <option value="SA_SECOND APPEAL">Second Appeal (SA)</option>
+                        <option value="STA_SPECIAL TRIBUNAL APPEAL">Special Tribunal Appeal (STA)</option>
+                        <option value="TC_TAX CASES">Tax Cases (TC)</option>
+                        <option value="TCA_TAX CASE APPEAL">Tax Case Appeal (TCA)</option>
+                        <option value="TCP_TAX CASE PETITION">Tax Case Petition (TCP)</option>
+                        <option value="TCR_TAX CASE REFERENCE">Tax Case Reference (TCR)</option>
+                        <option value="TMA_TRADE MARKS APPEAL">Trade Marks Appeal (TMA)</option>
+                        <option value="TMSA_TRADE MARKS SECOND A">Trade Marks Second Appeal (TMSA)</option>
+                        <option value="TR CMA_TRANSFER CIVIL MISC. APPEAL">Transfer Civil Miscellaneous Appeal (TR CMA)</option>
+                        <option value="WA_WRIT APPEAL">Writ Appeal (WA)</option>
+                        <option value="WP_WRIT PETITION">Writ Petition (WP)</option>
+                        <option value="CMA DB_CIVIL MISC. APPEAL(DB)">Civil Miscellaneous Appeal Division Bench (CMA DB)</option>
+                        <option value="CRL REF_CRIMINAL REFERENCE">Criminal Reference (CRL REF)</option>
+                        <option value="A_APPLICATION">Application (A)</option>
+                        <option value="APPL._APPLICATION (APPL.)">Application (APPL.)</option>
+                        <option value="APPLN_APPLICATION (IP)">Application IP (APPLN)</option>
+                        <option value="AS B_FIRST APPEAL BENCH">First Appeal Bench (AS B)</option>
+                        <option value="CMP_CIVIL MISC. PETITION">Civil Miscellaneous Petition (CMP)</option>
+                        <option value="CRL MP_CRIMINAL MISC. PETITION">Criminal Miscellaneous Petition (CRL MP)</option>
+                        <option value="HCMP_HABEAS CORPUS MISC. PETITION">Habeas Corpus Miscellaneous Petition (HCMP)</option>
+                        <option value="IA_INSOLVENCY APPLICATION">Insolvency Application (IA)</option>
+                        <option value="OA_ORIGINAL APPLICATION">Original Application (OA)</option>
+                        <option value="OMS_ORIGINAL MATRIMONIAL">Original Matrimonial (OMS)</option>
+                        <option value="OP_ORIGINAL PETITION">Original Petition (OP)</option>
+                        <option value="OSA_ORIGINAL SIDE APPEAL">Original Side Appeal (OSA)</option>
+                        <option value="RCMP_RCP MISC. PETITION">RCP Miscellaneous Petition (RCMP)</option>
+                        <option value="REV.APLO_REVIEW APPLN.(OS)">Review Application Original Side (REV.APLO)</option>
+                        <option value="REV.PET_REVIEW PETITION(O)">Review Petition Original (REV.PET)</option>
+                        <option value="SUB A_SUB APPLICATION">Sub Application (SUB A)</option>
+                        <option value="SUB APPL_SUB APPLICATIONS(OS)">Sub Applications Original Side (SUB APPL)</option>
+                        <option value="TCMP_TAX CMP">Tax CMP (TCMP)</option>
+                        <option value="TOS_TESTAMENTARY ORIGINAL SUIT">Testamentary Original Suit (TOS)</option>
+                        <option value="TR AS_TRANSFER FIRST APPEA">Transfer First Appeal (TR AS)</option>
+                        <option value="TR CMP_TRANSFER CIVIL MISC. PETITION">Transfer Civil Miscellaneous Petition (TR CMP)</option>
+                        <option value="TRCS_TRANSFER CIVIL SUIT">Transfer Civil Suit (TRCS)</option>
+                        <option value="VCMP_VACATING ORDER MISC.">Vacating Order Miscellaneous (VCMP)</option>
+                        <option value="WAMP_W.A. MISCELLANEOUS PETITION">Writ Appeal Miscellaneous Petition (WAMP)</option>
+                        <option value="WMP_WRIT MISC. PETITION">Writ Miscellaneous Petition (WMP)</option>
+                        <option value="WPMP_W.P. MISCELLANEOUS PETITION">Writ Petition Miscellaneous Petition (WPMP)</option>
+                        <option value="WVMP_VACATING ORDER-MISC.">Vacating Order Miscellaneous (WVMP)</option>
+                        <option value="CROS.OBJ_CROSS OBJECTION">Cross Objection (CROS.OBJ)</option>
+                        <option value="REV.STP_REVIEW SPL.TRIBUNAL">Review Special Tribunal (REV.STP)</option>
+                        <option value="SCMP_SUPREME COURT MISC.PETITION">Supreme Court Miscellaneous Petition (SCMP)</option>
+                        <option value="SCP_SUPREME COURT PETITION">Supreme Court Petition (SCP)</option>
+                        <option value="STP_SPECIAL TRIBUNAL PETITION">Special Tribunal Petition (STP)</option>
+                        <option value="IN_INSOLVENCY NOTICE">Insolvency Notice (IN)</option>
+                        <option value="COMP.A_COMPANY APPLICATIONS">Company Applications (COMP.A)</option>
+                        <option value="CONT APP_CONTEMPT APPLICATION">Contempt Application (CONT APP)</option>
+                        <option value="ELP_ELECTION PETITION">Election Petition (ELP)</option>
+                        <option value="EP_EXECUTION PETITION">Execution Petition (EP)</option>
+                        <option value="IC_INSOLVENCY CASES">Insolvency Cases (IC)</option>
+                        <option value="LTS_LEAVE TO SUE">Leave to Sue (LTS)</option>
+                        <option value="TR APPL_TRANSFER APPLICATION">Transfer Application (TR APPL)</option>
+                        <option value="WP(MD)_Writ Petition(MD)">Writ Petition Madurai (WP(MD))</option>
+                        <option value="WA(MD)_WRIT APPEAL(MD)">Writ Appeal Madurai (WA(MD))</option>
+                        <option value="CRP(MD)_CIVIL REVISION PETITION(MD)">Civil Revision Petition Madurai (CRP(MD))</option>
+                        <option value="CMP(MD)_CIVIL MISC. PETITION (MD)">Civil Miscellaneous Petition Madurai (CMP(MD))</option>
+                        <option value="REV.APLW(MD)_REV. APPLICATION WRIT (MD)">Review Application Writ Madurai (REV.APLW(MD))</option>
+                        <option value="WMP(MD)_WRIT MISC. PETITION (MD)">Writ Miscellaneous Petition Madurai (WMP(MD))</option>
+                        <option value="CRL OP(MD)_CRIMINAL ORIGINAL PETITION(MD)">Criminal Original Petition Madurai (CRL OP(MD))</option>
+                        <option value="CRL MP(MD)_CRIMINIAL MISC.PETITION(MD)">Criminal Miscellaneous Petition Madurai (CRL MP(MD))</option>
+                        <option value="HCP(MD)_HABEAS CORPUS PETITION(MD)">Habeas Corpus Petition Madurai (HCP(MD))</option>
+                        <option value="RP_Reference Petition">Reference Petition (RP)</option>
+                        <option value="CONT P (MD)_CONTEMPT PETITION (MD)">Contempt Petition Madurai (CONT P (MD))</option>
+                        <option value="REV.APLC(MD)_REVIEW APPLICATION CIVIL(MD)">Review Application Civil Madurai (REV.APLC(MD))</option>
+                        <option value="CMA(MD)_CI. MISC. APPEAL(MD)">Civil Miscellaneous Appeal Madurai (CMA(MD))</option>
+                        <option value="CRL A(MD)_CRIMINAL APPEAL(MD)">Criminal Appeal Madurai (CRL A(MD))</option>
+                        <option value="CRL RC(MD)_CRIMINAL REVISION CASE(MD)">Criminal Revision Case Madurai (CRL RC(MD))</option>
+                        <option value="TR CMP(MD)_TRANSFER CIVIL MISC(MD).">Transfer Civil Miscellaneous Madurai (TR CMP(MD))</option>
+                        <option value="AS(MD)_FIRST APPEAL(MD)">First Appeal Madurai (AS(MD))</option>
+                        <option value="SA(MD)_SECOND APPEAL(MD)">Second Appeal Madurai (SA(MD))</option>
+                        <option value="SUB A(M)_SUB APPLICATION(MD)">Sub Application Madurai (SUB A(M))</option>
+                        <option value="WPMP(MD)_W.P. MISC. PET.">Writ Petition Miscellaneous Petition Madurai (WPMP(MD))</option>
+                        <option value="WP Crl. (MD)_Writ Petition Criminal (MD)">Writ Petition Criminal Madurai (WP Crl. (MD))</option>
+                        <option value="C.S(COMM DIV)_Civil Suit (Commercial Division)">Civil Suit Commercial Division (C.S(COMM DIV))</option>
+                        <option value="O.P(COMM DIV)_Original Petition (Commercial Division)">Original Petition Commercial Division (O.P(COMM DIV))</option>
+                        <option value="APPEAL(CAD)_Appeal - Commercial Appellate Division">Appeal Commercial Appellate Division (APPEAL(CAD))</option>
+                        <option value="OSA(CAD)_Original Side Appeal-Commercial Appellate Division">Original Side Appeal Commercial Appellate Division (OSA(CAD))</option>
+                        <option value="Arb Appln_Arbitration Application">Arbitration Application (Arb Appln)</option>
+                        <option value="Arb O.P_Arbitration Original Petition">Arbitration Original Petition (Arb O.P)</option>
+                        <option value="Arb O.P(COM.DIV.)_Arbitration Original Petition (Commercial Division)">Arbitration Original Petition Commercial Division (Arb O.P(COM.DIV.))</option>
+                        <option value="Arb Appeal_Arbitration Appeal">Arbitration Appeal (Arb Appeal)</option>
+                        <option value="Arb. E.P_Arbitration Execution Petition">Arbitration Execution Petition (Arb. E.P)</option>
+                        <option value="(T)OP(TM)_TRANSFERRED ORIGINAL PETITION TRADE MARK ACT">Transferred Original Petition Trade Mark Act ((T)OP(TM))</option>
+                        <option value="(T)CMA(TM)_TRANSFERRED CIVIL MISCELLANEOUS APPEAL TRADE MARK ACT">Transferred Civil Miscellaneous Appeal Trade Mark Act ((T)CMA(TM))</option>
+                        <option value="(T)OP(CR)_TRANSFERRED ORIGINAL PETITION COPY RIGHTS ACT">Transferred Original Petition Copy Rights Act ((T)OP(CR))</option>
+                        <option value="(T)CMA(CR)_TRANSFERRED CIVIL MISCELLANEOUS APPEAL COPY RIGHTS ACT">Transferred Civil Miscellaneous Appeal Copy Rights Act ((T)CMA(CR))</option>
+                        <option value="(T)OP(PT)_TRANSFERRED ORIGINAL PETITION PATENTS ACT">Transferred Original Petition Patents Act ((T)OP(PT))</option>
+                        <option value="(T)CMA(PT)_TRANSFERRED CIVIL MISCELLANEOUS APPEAL PATENTS ACT">Transferred Civil Miscellaneous Appeal Patents Act ((T)CMA(PT))</option>
+                        <option value="(T)OP(GI)_TRANSFERRED ORIGINAL PETITION GEOGRAPHICAL INDICATIONS ACT">Transferred Original Petition Geographical Indications Act ((T)OP(GI))</option>
+                        <option value="(T)CMA(GI)_TRANSFERRED CIVIL MISCELLANEOUS APPEAL GEOGRAPHICAL INDICATIONS ACT">Transferred Civil Miscellaneous Appeal Geographical Indications Act ((T)CMA(GI))</option>
+                        <option value="(T)CMA(PV)_TRANSFERRED CIVIL MISC. APPEAL PROTECTION OF PLANTS VARIETIES AND FARMERS RIGHTS ACT">Transferred Civil Misc. Appeal Protection of Plants Varieties and Farmers Rights Act ((T)CMA(PV))</option>
+                        <option value="OP(TM)_ORIGINAL PETITION TRADE MARK ACT">Original Petition Trade Mark Act (OP(TM))</option>
+                        <option value="CMA(TM)_CIVIL MISCELLANEOUS APPEAL TRADE MARK ACT">Civil Miscellaneous Appeal Trade Mark Act (CMA(TM))</option>
+                        <option value="OP(CR)_ORIGINAL PETITION COPY RIGHTS ACT">Original Petition Copy Rights Act (OP(CR))</option>
+                        <option value="CMA(CR)_CIVIL MISCELLANEOUS APPEAL COPY RIGHTS ACT">Civil Miscellaneous Appeal Copy Rights Act (CMA(CR))</option>
+                        <option value="OP(PT)_ORIGINAL PETITION PATENTS ACT">Original Petition Patents Act (OP(PT))</option>
+                        <option value="CMA(PT)_CIVIL MISCELLANEOUS APPEAL PATENTS ACT">Civil Miscellaneous Appeal Patents Act (CMA(PT))</option>
+                        <option value="OP(GI)_ORIGINAL PETITION GEOGRAPHICAL INDICATIONS ACT">Original Petition Geographical Indications Act (OP(GI))</option>
+                        <option value="CMA(GI)_CIVIL MISCELLANEOUS APPEAL GEOGRAPHICAL INDICATIONS ACT">Civil Miscellaneous Appeal Geographical Indications Act (CMA(GI))</option>
+                        <option value="CMA(PV)_CIVIL MISCELLANEOUS APPEAL PROTECTION OF PLANTS VARIETIES AND FARMERS RIGHTS ACT">Civil Miscellaneous Appeal Protection of Plants Varieties and Farmers Rights Act (CMA(PV))</option>
+                        <option value="WP(IPD)_Writ Petition - IPD">Writ Petition IPD (WP(IPD))</option>
+                        <option value="WMP(IPD)_WRIT MISC. PETITION - IPD">Writ Miscellaneous Petition IPD (WMP(IPD))</option>
+                        <option value="(TM) A_TRADE MARKS APPLICATION">Trade Marks Application ((TM) A)</option>
+                        <option value="(CR) A_COPY RIGHTS APPLICATION">Copy Rights Application ((CR) A)</option>
+                        <option value="(PT) A_PATENTS APPLICATION">Patents Application ((PT) A)</option>
+                        <option value="(GI)  A_GEOGRAPHICAL INDICATIONS APPLICATION">Geographical Indications Application ((GI) A)</option>
+                        <option value="(PV)  A_PROTECTION OF PLANTS VARIETIES APPLICATION">Protection of Plants Varieties Application ((PV) A)</option>
+                        <option value="CMP(TM)_CIVIL MISC. PETITION (TRADE MARK)">Civil Miscellaneous Petition Trade Mark (CMP(TM))</option>
+                        <option value="CMP(CR)_CIVIL MISC. PETITION (COPY RIGHTS)">Civil Miscellaneous Petition Copy Rights (CMP(CR))</option>
+                        <option value="CMP(PT)_CIVIL MISC. PETITION (PATENTS)">Civil Miscellaneous Petition Patents (CMP(PT))</option>
+                        <option value="WPMP(IPD)_W.P. MISCELLANEOUS PETITION - IPD">Writ Petition Miscellaneous Petition IPD (WPMP(IPD))</option>
+                        <option value="(T)(TM) A_TRANSFERRED TRADE MARK APPLICATION">Transferred Trade Mark Application ((T)(TM) A)</option>
+                        <option value="(T)(CR) A_TRANSFERRED COPY RIGHTS APPLICATION">Transferred Copy Rights Application ((T)(CR) A)</option>
+                        <option value="(T)(PT) A_TRANSFERRED PATENTS APPLICATION">Transferred Patents Application ((T)(PT) A)</option>
+                        <option value="(T)(GI) A_TR. GEOGRAPHICAL INDICATIONS APPLICATION">Transferred Geographical Indications Application ((T)(GI) A)</option>
+                        <option value="(T)(PV) A_TR. PROTECTION OF PLANTS VARIETIES APPLICATION">Transferred Protection of Plants Varieties Application ((T)(PV) A)</option>
+                        <option value="(T)CMP(TM)_TR. CIVIL MISC. PETITION (TRADE MARK)">Transferred Civil Miscellaneous Petition Trade Mark ((T)CMP(TM))</option>
+                        <option value="(T)CMP(CR)_TR. CIVIL MISC. PETITION (COPY RIGHTS)">Transferred Civil Miscellaneous Petition Copy Rights ((T)CMP(CR))</option>
+                        <option value="(T)CMP(PT)_TR. CIVIL MISC. PETITION (PATENTS)">Transferred Civil Miscellaneous Petition Patents ((T)CMP(PT))</option>
+                        <option value="CMP(GI)_CIVIL MISC. PETITION GEOGRAPHICAL INDICATIONS ACT">Civil Miscellaneous Petition Geographical Indications Act (CMP(GI))</option>
+                        <option value="CMP(PV)_CIVIL MISC. PETITION PROTECTION OF PLANTS VARIETIES AND FARMERS RIGHTS ACT">Civil Miscellaneous Petition Protection of Plants Varieties and Farmers Rights Act (CMP(PV))</option>
+                        <option value="(T)OP(PV)_TRANSFERRED ORIGINAL PETITION PROTECTION OF PLANTS VARIETIES AND FARMERS RIGHTS ACT">Transferred Original Petition Protection of Plants Varieties and Farmers Rights Act ((T)OP(PV))</option>
+                        <option value="(T)CMP(GI)_TRANSFERRED CIVIL MISC. PETITION GEOGRAPHICAL INDICATIONS ACT">Transferred Civil Miscellaneous Petition Geographical Indications Act ((T)CMP(GI))</option>
+                        <option value="(T)CMP(PV)_TRANSFERRED CIVIL MISC. PETITION PROTECTION OF PLANTS VARIETIES AND FARMERS RIGHTS ACT">Transferred Civil Miscellaneous Petition Protection of Plants Varieties and Farmers Rights Act ((T)CMP(PV))</option>
+                        <option value="OP(PV)_ORIGINAL PETITION PROTECTION OF PLANTS VARIETIES AND FARMERS RIGHTS ACT">Original Petition Protection of Plants Varieties and Farmers Rights Act (OP(PV))</option>
+                        <option value="WP Crl._Writ Petition Criminal">Writ Petition Criminal (WP Crl.)</option>
+                        <option value="CRP(IPD)_Civil Revision Petition Intellactual Property Division">Civil Revision Petition Intellectual Property Division (CRP(IPD))</option>
+                        <option value="REV.PET(IPD)_Review Petition Intellectual Property Division">Review Petition Intellectual Property Division (REV.PET(IPD))</option>
+                        <option value="OP(Des)_Original Petition Designs Act">Original Petition Designs Act (OP(Des))</option>
+                        <option value="(T)OP(Des)_Transferred Original Petition Designs Act">Transferred Original Petition Designs Act ((T)OP(Des))</option>
+                        <option value="(T)(Des)A_Transferred Designs Act Application">Transferred Designs Act Application ((T)(Des)A)</option>
+                        <option value="(Des)A_Design Act Application">Design Act Application ((Des)A)</option>
+                        <option value="(T)Rev.Pet(IPD)_Transferred Review Petition (IPD)">Transferred Review Petition IPD ((T)Rev.Pet(IPD))</option>
+                        <option value="APPEAL(CAD)(MD)_Appeal - Commercial Appellate Division(MD)">Appeal Commercial Appellate Division Madurai (APPEAL(CAD)(MD))</option>
+                        <option value="TCTOP(MD)_Transferred City Tenant Original Petition(MD)">Transferred City Tenant Original Petition Madurai (TCTOP(MD))</option>
+                        <option value="TROS(MD)_Transferred Original Suit(MD)">Transferred Original Suit Madurai (TROS(MD))</option>
+                        <option value="Arb Appeal(MD)_Arbitration Appeal(MD)">Arbitration Appeal Madurai (Arb Appeal(MD))</option>
+                        <option value="WPMP Crl._Writ Miscellaneous Petition Criminal">Writ Miscellaneous Petition Criminal (WPMP Crl.)</option>
+                        <option value="WPMP Crl.(MD)_Writ Miscellaneous Petition Criminal (MD)">Writ Miscellaneous Petition Criminal Madurai (WPMP Crl.(MD))</option>
+                        <option value="REV.APLWP Crl.(MD)_REV. APPLICATION WRIT PETITION CRIMINAL (MD)">Review Application Writ Petition Criminal Madurai (REV.APLWP Crl.(MD))</option>
+                        <option value="REV.APLWP Crl._REV. APPLICATION WRIT PETITION CRIMINAL">Review Application Writ Petition Criminal (REV.APLWP Crl.)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="caseNumber">Case Number</label>
+                    <input type="text" id="caseNumber" name="case_number" placeholder="Enter case number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="caseYear">Case Year</label>
+                    <input type="number" id="caseYear" name="case_year" placeholder="Enter case year (e.g., 2024)" min="1900" max="2030" required>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Search Case
+                </button>
+            </form>
+        </div>
+
+        <div class="status-section" id="statusSection">
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon" id="statusIcon">⏳</div>
+                    <div>
+                        <div class="status-text" id="statusText">Processing...</div>
+                        <div class="job-id" id="jobId"></div>
+                    </div>
+                </div>
+
+                <div class="result-section" id="resultSection" style="display: none;">
+                    <h3>Case Details</h3>
+                    <div class="result-grid" id="resultGrid">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+
+                <div class="error-message" id="errorMessage" style="display: none;">
+                    <!-- Error message will be shown here -->
+                </div>
+
+                <button class="new-search-btn" id="newSearchBtn" onclick="resetForm()" style="display: none;">
+                    Search Another Case
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let pollInterval = null;
+
+        // API base URL - adjust this to match your backend
+        const API_BASE = 'http://localhost:8000'; // Change this to your actual backend URL
+
+        document.getElementById('caseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const requestData = {
+                case_type: formData.get('case_type'),
+                case_number: formData.get('case_number'),
+                case_year: formData.get('case_year')
+            };
+
+            try {
+                // Disable form and show loading
+                setFormState(false);
+                showStatus();
+                updateStatus('processing', 'Submitting request...', '');
+
+                // Submit the search request
+                const response = await fetch(`${API_BASE}/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                currentJobId = result.job_id;
+
+                // Start polling for results
+                updateStatus('processing', 'Processing your request...', result.job_id);
+                startPolling();
+
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                updateStatus('error', 'Failed to submit request', '');
+                showError(`Error: ${error.message}`);
+                setFormState(true);
+            }
+        });
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            
+            pollInterval = setInterval(async () => {
+                if (!currentJobId) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/result/${currentJobId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.status === 'processing') {
+                        // Still processing, continue polling
+                        return;
+                    }
+
+                    // Stop polling
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+
+                    if (result.status === 'complete') {
+                        updateStatus('complete', 'Search completed successfully!', currentJobId);
+                        showResults(result.result);
+                    } else if (result.status === 'error') {
+                        updateStatus('error', 'Search failed', currentJobId);
+                        showError(result.error || 'Unknown error occurred');
+                    }
+
+                } catch (error) {
+                    console.error('Error polling for results:', error);
+                    clearInterval(pollInterval);
+                    updateStatus('error', 'Failed to get results', currentJobId);
+                    showError(`Error: ${error.message}`);
+                }
+            }, 1000); // Poll every 1 second
+        }
+
+        function setFormState(enabled) {
+            const submitBtn = document.getElementById('submitBtn');
+            const inputs = document.querySelectorAll('#caseForm input, #caseForm select');
+            
+            submitBtn.disabled = !enabled;
+            submitBtn.textContent = enabled ? 'Search Case' : 'Processing...';
+            
+            inputs.forEach(input => input.disabled = !enabled);
+        }
+
+        function showStatus() {
+            document.getElementById('statusSection').style.display = 'block';
+            hideResults();
+            hideError();
+        }
+
+        function updateStatus(status, text, jobId) {
+            const statusCard = document.querySelector('.status-card');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const jobIdElement = document.getElementById('jobId');
+
+            // Remove existing status classes
+            statusCard.className = 'status-card';
+            statusCard.classList.add(`status-${status}`);
+
+            // Update icon and text
+            const icons = {
+                processing: '⏳',
+                complete: '✓',
+                error: '✗'
+            };
+
+            statusIcon.textContent = icons[status] || '⏳';
+            statusText.textContent = text;
+            jobIdElement.textContent = jobId ? `Job ID: ${jobId}` : '';
+        }
+
+        function formatPetitioner(text) {
+            if (!text || text === 'Not available') return text;
+            
+            // Split by periods and take the first sentence as the main name
+            const sentences = text.split('. ');
+            if (sentences.length > 1) {
+                return `<strong>${sentences[0]}</strong><br><span style="font-size: 14px; color: #666;">${sentences.slice(1).join('. ')}</span>`;
+            }
+            return `<strong>${text}</strong>`;
+        }
+
+        function formatRespondent(text) {
+            if (!text || text === 'Not available') return text;
+            
+            // Split by R- pattern (R-2, R-3, etc.) but keep the R- prefix
+            const parts = text.split(/(?=R-\d+)/);
+            
+            // Format each respondent section
+            const formattedParts = parts.map((part, index) => {
+                if (!part.trim()) return '';
+                
+                // For the first part (before any R-n), just return as is
+                if (index === 0 && !part.trim().startsWith('R-')) {
+                    return `<div style="margin-bottom: 10px;"><strong>R-1:</strong> ${part.trim()}</div>`;
+                }
+                
+                // For R-n parts, format with proper spacing
+                if (part.trim().startsWith('R-')) {
+                    const match = part.match(/^(R-\d+)\s+(.+)/);
+                    if (match) {
+                        return `<div style="margin-bottom: 10px;"><strong>${match[1]}:</strong> ${match[2]}</div>`;
+                    }
+                }
+                
+                return `<div style="margin-bottom: 10px;">${part.trim()}</div>`;
+            }).filter(part => part !== '');
+            
+            return formattedParts.join('');
+        }
+
+        function showResults(result) {
+            const resultSection = document.getElementById('resultSection');
+            const resultGrid = document.getElementById('resultGrid');
+            const newSearchBtn = document.getElementById('newSearchBtn');
+
+            const fields = [
+                { key: 'petitioner', label: 'Petitioner', formatter: formatPetitioner },
+                { key: 'respondent', label: 'Respondent', formatter: formatRespondent },
+                { key: 'filing_date', label: 'Filing Date' },
+                { key: 'next_hearing_date', label: 'Next Hearing Date' }
+            ];
+
+            resultGrid.innerHTML = '';
+
+            fields.forEach(field => {
+                let value = result[field.key] || 'Not available';
+                
+                // Apply formatter if exists
+                if (field.formatter && value !== 'Not available') {
+                    value = field.formatter(value);
+                }
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                // Special styling for respondent field to give it more space
+                if (field.key === 'respondent') {
+                    resultItem.style.gridColumn = '1 / -1'; // Take full width
+                }
+                
+                resultItem.innerHTML = `
+                    <div class="result-label">${field.label}</div>
+                    <div class="result-value">${value}</div>
+                `;
+                resultGrid.appendChild(resultItem);
+            });
+
+            resultSection.style.display = 'block';
+            newSearchBtn.style.display = 'inline-block';
+        }
+
+        function showError(errorMessage) {
+            const errorElement = document.getElementById('errorMessage');
+            const newSearchBtn = document.getElementById('newSearchBtn');
+            
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = 'block';
+            newSearchBtn.style.display = 'inline-block';
+        }
+
+        function hideResults() {
+            document.getElementById('resultSection').style.display = 'none';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function resetForm() {
+            // Clear interval if running
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+
+            // Reset variables
+            currentJobId = null;
+
+            // Hide status section
+            document.getElementById('statusSection').style.display = 'none';
+
+            // Reset form
+            document.getElementById('caseForm').reset();
+            setFormState(true);
+
+            // Hide results and errors
+            hideResults();
+            hideError();
+            document.getElementById('newSearchBtn').style.display = 'none';
+        }
+
+        // Clear interval on page unload
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    </script>
+</body>
+</html>
